@@ -1,0 +1,36 @@
+# Télécharge les photos Unsplash en WebP (1600 px et 800 px) dans docs/images/
+# puis les enregistre sur la branche. À relancer à la main si besoin.
+name: Photos Unsplash
+
+on:
+  push:
+    paths: [".github/workflows/photos.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  photos:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Télécharger et convertir
+        run: |
+          mkdir -p docs/images
+          get() { # nom, identifiant Unsplash
+            for w in 1600 800; do
+              curl -sSfL -o "docs/images/$1-$w.webp" \
+                "https://images.unsplash.com/$2?w=$w&fm=webp&q=72&fit=max"
+            done
+          }
+          get plat-dattes   photo-1777891258071-45b4cee69360  # Husien Bisky
+          get tas-dattes    photo-1777891258039-970dd7e6e14c  # Husien Bisky
+          get rangs-dattes  photo-1770617476915-7269d29d27dc  # Mustafa Akın
+          ls -la docs/images
+      - name: Enregistrer
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898283+github-actions[bot]@users.noreply.github.com"
+          git add docs/images
+          git diff --cached --quiet || { git commit -m "Ajoute les photos Unsplash en WebP" && git push; }
